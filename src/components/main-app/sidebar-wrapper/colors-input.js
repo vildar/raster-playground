@@ -4,6 +4,7 @@ import { URL_COLORS, URL_UPDATE_PUSH } from 'config';
 import { ReactComponent as CloseSVG } from 'assets/svg/close.svg';
 import { getColorsArray, getColorsString } from 'utils';
 import { ChromePicker } from 'react-color';
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 
 const popover = {
   position: 'absolute',
@@ -56,31 +57,48 @@ export default function ColorsInput() {
           {' '}
         </a>
       </div>
-      <div className="color-input">
-        {colorsArray.map((color, key) => (
-          <>
-            <div
-              className="color-input-item"
-              style={
-                itemColorStatus && itemColorStatus.key === key
-                  ? { background: color, borderColor: 'black' }
-                  : { background: color }
-              }
-            >
-              <div
-                className="color-input-item-close"
-                onClick={e => deleteColor(key, colorsArray, onChangeColor)}
-              >
-                <CloseSVG />
-              </div>
-              <div
-                className="color-input-item-overlay"
-                onClick={e => setItemColorStatus({ color, key })}
-              ></div>
+      <DragDropContext>
+        <Droppable droppableId="colors">
+          {(provided) => (
+            <div 
+              {...provided.droppableProps} 
+              ref={provided.innerRef}
+              className="color-input">
+              {colorsArray.map((color, key) => (
+                <>
+                  <Draggable key={key} draggableId={color} index={key}>
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef} 
+                        {...provided.draggableProps} 
+                        {...provided.dragHandleProps}
+                        className="color-input-item"
+                        style={
+                          itemColorStatus && itemColorStatus.key === key
+                            ? { background: color, borderColor: 'black' }
+                            : { background: color }
+                        }
+                      >
+                        <div
+                          className="color-input-item-close"
+                          onClick={e => deleteColor(key, colorsArray, onChangeColor)}
+                        >
+                          <CloseSVG />
+                        </div>
+                        <div
+                          className="color-input-item-overlay"
+                          onClick={e => setItemColorStatus({ color, key })}
+                        ></div>
+                      </div>
+                    )}
+                  </Draggable>
+                </>
+              ))}
+              {provided.placeholder}
             </div>
-          </>
-        ))}
-      </div>
+          )}
+        </Droppable>
+      </DragDropContext>
       {itemColorStatus ? (
         <div style={popover}>
           <div
